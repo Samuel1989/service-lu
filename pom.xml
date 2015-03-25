@@ -2,12 +2,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>service_lu</groupId>
-  <artifactId>com.sam.service.lookup</artifactId>
+  <groupId>com.sam.service.lookup</groupId>
+  <artifactId>service-lu</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
 
-  <name>com.sam.service.lookup</name>
+  <name>service-lu</name>
   <url>http://maven.apache.org</url>
   
   <parent>
@@ -18,7 +17,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring.version>4.1.5.RELEASE</spring.version>
   </properties>
 
   <dependencies>
@@ -32,4 +30,13 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
   </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>
