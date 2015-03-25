@@ -6,17 +6,19 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sam.service.lookup.http.LoadBalancer;
 import com.sam.service.lookup.http.ServiceDispatcher;
 import com.sam.service.lookup.utils.JSONBuilder;
 
 public class ServiceRegistry {
-	private HashMap<String, List<Service>> serviceMap = new HashMap<String, List<Service>>();
+	private HashMap<String, List<Service>> serviceMap;
 	private ServiceDispatcher dispatcher;
 	private JSONBuilder jsonBuilder;
 	
 	public ServiceRegistry() {
 		dispatcher = new ServiceDispatcher();
 		jsonBuilder = new JSONBuilder();
+		serviceMap = new HashMap<String, List<Service>>();
 	}
 	
 	public String addService(Service service) {
@@ -74,8 +76,12 @@ public class ServiceRegistry {
 	
 	public String routeRequest(String groupID, String json) {
 		String response = "";
+		LoadBalancer load = new LoadBalancer();
+		int serviceID = 0;
 		if (serviceMap.containsKey(groupID)) {
-			response = dispatcher.post(serviceMap.get(groupID).get(0).getEndpoint(), json);		
+			List<Service> group = serviceMap.get(groupID);
+			serviceID = load.getRandom(group.size());
+			response = dispatcher.post(group.get(serviceID).getEndpoint(), json);		
 		} else {
 			response = jsonBuilder.buildResponse("message", "groupID: " + groupID + " not found.");
 		}
