@@ -6,29 +6,29 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sam.service.lookup.http.ServiceDispatcher;
+import com.sam.service.lookup.utils.JSONBuilder;
 
 public class ServiceRegistry {
 	private HashMap<String, List<Service>> serviceMap = new HashMap<String, List<Service>>();
 	private ServiceDispatcher dispatcher;
+	private JSONBuilder jsonBuilder;
 	
 	public ServiceRegistry() {
 		dispatcher = new ServiceDispatcher();
+		jsonBuilder = new JSONBuilder();
 	}
 	
 	public String addService(Service service) {
 		String groupID = service.getGroupID();
-		JsonNodeFactory factory = JsonNodeFactory.instance;
-		ObjectNode response = new ObjectNode(factory);
+		String response = "";
 		boolean addService = true;
 		List<Service> serviceGroup;
 		
 		if (serviceMap.containsKey(groupID)) {
 			serviceGroup = serviceMap.get(groupID);
 			if (endpointExists(serviceGroup, service.getEndpoint())) {
-				response.put("message", "service is already registered.");
+				response = jsonBuilder.buildResponse("message", "service is already registered.");
 				addService = false;
 			} 
 		} else {
@@ -38,7 +38,7 @@ public class ServiceRegistry {
 		if (addService) {
 			serviceGroup.add(service);
 			serviceMap.put(groupID, serviceGroup);
-			response.put("message", "service has been registered.");
+			response = jsonBuilder.buildResponse("message", "service has been registered.");
 		}		
 		
 		return response.toString();
@@ -46,7 +46,7 @@ public class ServiceRegistry {
 	
 	public String getServiceGroups() {
 		ObjectMapper mapper = new ObjectMapper();
-		String json = "";
+		String response = "";
 		
 		List<String> keys = new ArrayList<String>();
 		for (String k : serviceMap.keySet()) {
@@ -54,12 +54,12 @@ public class ServiceRegistry {
 		}
 		
 		try {
-			json = mapper.writeValueAsString(keys);
+			response = mapper.writeValueAsString(keys);
 		} catch (JsonProcessingException e) {
 			System.out.println(e.getMessage());
 		}
 		
-		return json;
+		return response;
 	}
 	
 	private boolean endpointExists(List<Service> group, String endpoint) {
@@ -73,7 +73,13 @@ public class ServiceRegistry {
 	}
 	
 	public String routeRequest(String groupID, String json) {
-		return dispatcher.post(serviceMap.get(groupID).get(0).getEndpoint(), json);
+		String response = "";
+		if (serviceMap.containsKey(groupID)) {
+			response = dispatcher.post(serviceMap.get(groupID).get(0).getEndpoint(), json);		
+		} else {
+			response = jsonBuilder.buildResponse("message", "groupID: " + groupID + " not found.");
+		}
+		return response;
 	}
 
 }
